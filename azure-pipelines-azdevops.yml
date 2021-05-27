@@ -1,0 +1,37 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-16.0'
+
+stages:
+  - stage: Build_Stage
+    displayName: Build_Stage
+    jobs:
+      - job: BuildNuget
+        displayName: Build Nuget Pakages
+        variables:
+          BuildConfiguration: release
+        steps:
+        - task: DotNetCoreCLI@2
+          inputs:
+            command: 'restore'
+            projects: '**/*.csproj'
+            feedsToUse: 'select'
+            arguments: '--configuration $(BuildConfiguration)'
+        - task: DotNetCoreCLI@2
+          inputs:
+            command: 'build'
+            projects: '**/*.csproj'
+            arguments: '--configuration $(BuildConfiguration)'
+        - task: DotNetCoreCLI@2
+          inputs:
+            command: 'pack'
+            packagesToPack: '**/*.csproj'
+            versioningScheme: 'off'
+        - task: DotNetCoreCLI@2
+          inputs:
+            command: 'push'
+            packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+            nuGetFeedType: 'internal'
+            publishVstsFeed: 'b965a338-bf1c-4478-b5af-d211477d7493/8e3e1190-91f3-41f0-a336-d8feef9efec9'
